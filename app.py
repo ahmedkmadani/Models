@@ -5,7 +5,9 @@ import pymysql
 from flaskext.mysql import MySQL
 import os
 
-db = pymysql.connect("localhost","root","ahmed@12345","farmula_dashboard")
+# db = pymysql.connect("localhost","root","ahmed@12345","farmula_dashboard")
+db = pymysql.connect("localhost","root","","yfarm")
+
 
 app = Flask(__name__)
  
@@ -241,4 +243,4 @@ def yam():
 
 if __name__ == '__main__':
     app.secret_key='secret123'
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0',debug=True)
