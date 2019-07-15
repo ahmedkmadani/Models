@@ -5,7 +5,7 @@ import pymysql
 from flaskext.mysql import MySQL
 import os
 
-db = pymysql.connect("localhost","root","ahmed@12345","farmula_dashboard")
+db = pymysql.connect("localhost","root","","yfarm")
 
 app = Flask(__name__)
  
@@ -36,13 +36,14 @@ header = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + mltok
 
 class PredicitForm(Form):
     month = SelectField(u'Pick a Month', choices=[('1', 'January'), ('2', 'February'), ('3', 'March'), ('3', 'March'), ('4', 'April'), ('5', 'May'), ('6', 'June'), ('7', 'July'), ('8', 'August'), ('9', 'September'), ('10', 'October'), ('11', 'Novmber'), ('12', 'December')])
+    day = IntegerField(u'Enter a Day', [validators.NumberRange(min=1, max=31)])
     year = IntegerField(u'Enter a Year', [validators.NumberRange(min=1970, max=2050)])
 
-@app.route('/cocoyam', methods=['GET','POST'])
-def cocoyam():
+@app.route('/potato', methods=['GET','POST'])
+def potato():
 
     cursor = db.cursor()
-    cursor.execute("SELECT  * FROM  prediction where crop = 'Cocoyam'")
+    cursor.execute("SELECT  * FROM  prediction where crop = 'Red Irish Potato'")
     data = cursor.fetchall()
     print(data)
     cursor.close()
@@ -51,42 +52,10 @@ def cocoyam():
     if request.method == 'POST' and form.validate():
         month = form.month.data
         year = form.year.data
-        payload_scoring = {"fields":["MONTH","YEAR"],"values":[[int(month),year]]}
-        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/1d441776-58fb-4e22-8975-aa9b1c4a40a9/online', json=payload_scoring, headers=header)
-        print("Scoring response")
-        print(json.loads(response_scoring.text)) 
-        print(month)
-        response = json.loads(response_scoring.text)
+        day = form.day.data
 
-        #get result from the response 
-        month_num = int(response['values'][0][0])
-        month_i = "Month : " + calendar.month_name[month_num]
-        year =  "Year : " + str(response['values'][0][1])
-        pre_prams = str(response['values'][0][2])
-        price_round = ("%.2f" % round(response['values'][0][3],2))
-        price = str("Predict Price :  "+ price_round + " GHS (250KG)")
-        return render_template('cocoyam.html', form=form, month_i=month_i, year=year, price=price)
-
-    
-    
-    return render_template('cocoyam.html', form=form , data=data)     
-
-
-@app.route('/maize', methods=['GET','POST'])
-def maize():
-
-    cursor = db.cursor()
-    cursor.execute("SELECT  * FROM  prediction where crop = 'Maize' ")
-    data = cursor.fetchall()
-    print(data)
-    cursor.close()
-
-    form = PredicitForm(request.form)
-    if request.method == 'POST' and form.validate():
-        month = form.month.data
-        year = form.year.data
-        payload_scoring = {"fields":["Year","Month"],"values":[[year,int(month)]]}
-        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/eee31a61-23bb-436e-a5b4-8b7e8a020bec/online', json=payload_scoring, headers=header)
+        payload_scoring = {"fields":["Year", "Month", "Day"],"values":[[year,int(month),day]]}
+        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/9a8fbb2d-9198-4ac1-a4e0-54f4788561db/online', json=payload_scoring, headers=header)
         print("Scoring response")
         print(json.loads(response_scoring.text)) 
         print(month)
@@ -96,149 +65,17 @@ def maize():
         month_num = int(response['values'][0][1])
         month_i = "Month : " + calendar.month_name[month_num]
         year =  "Year : " + str(response['values'][0][0])
-        pre_prams = str(response['values'][0][2])
-        price_round = ("%.2f" % round(response['values'][0][3],2))
-        price = str("Predict Price :  "+ price_round + " GHS (100KG)")
-        return render_template('maize.html', form=form, month_i=month_i, year=year, price=price, data=data)
+        day =  "Day : " + str(response['values'][0][2])
+        pre_prams = str(response['values'][0][3])
+        price_round = ("%.2f" % round(response['values'][0][4],2))
+        price = str("Predict Price :  "+ price_round + " KSH (50KG)")
+        return render_template('potato.html', form=form, month_i=month_i, day=day, year=year, price=price)
 
     
     
-    return render_template('maize.html', form=form , data=data)
+    return render_template('potato.html', form=form , data=data)     
 
-@app.route('/millet', methods=['GET','POST'])
-def millet():
-
-    cursor = db.cursor()
-    cursor.execute("SELECT  * FROM  prediction where crop = 'Millet' ")
-    data = cursor.fetchall()
-    print(data)
-    cursor.close()
-
-    form = PredicitForm(request.form)
-    if request.method == 'POST' and form.validate():
-        month = form.month.data
-        year = form.year.data
-        payload_scoring = {"fields":["Year","Month"],"values":[[year,int(month)]]}
-        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/38f26f63-b3a7-4a2b-b405-c4acddf5f906/online', json=payload_scoring, headers=header)
-        print("Scoring response")
-        print(json.loads(response_scoring.text)) 
-        print(month)
-        response = json.loads(response_scoring.text)
-
-        #get result from the response 
-        month_num = int(response['values'][0][1])
-        month_i = "Month : " + calendar.month_name[month_num]
-        year =  "Year : " + str(response['values'][0][0])
-        pre_prams = str(response['values'][0][2])
-        price_round = ("%.2f" % round(response['values'][0][3],2))
-        price = str("Predict Price :  "+ price_round + " GHS (93KG)")
-        return render_template('millet.html', form=form, month_i=month_i, year=year, price=price, data=data)
-
-    
-    
-    return render_template('millet.html', form=form , data=data) 
-
-
-@app.route('/sorghum', methods=['GET','POST'])
-def sorghum():
-
-    cursor = db.cursor()
-    cursor.execute("SELECT  * FROM  prediction where crop = 'Sorghum' ")
-    data = cursor.fetchall()
-    print(data)
-    cursor.close()
-
-    form = PredicitForm(request.form)
-    if request.method == 'POST' and form.validate():
-        month = form.month.data
-        year = form.year.data
-        payload_scoring = {"fields":["Year","Month"],"values":[[year,int(month)]]}
-        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/62f973dd-c8a8-4c80-bce3-022b9475d7b5/online', json=payload_scoring, headers=header)
-        print("Scoring response")
-        print(json.loads(response_scoring.text)) 
-        print(month)
-        response = json.loads(response_scoring.text)
-
-        #get result from the response 
-        month_num = int(response['values'][0][1])
-        month_i = "Month : " + calendar.month_name[month_num]
-        year =  "Year : " + str(response['values'][0][0])
-        pre_prams = str(response['values'][0][2])
-        price_round = ("%.2f" % round(response['values'][0][3],2))
-        price = str("Predict Price :  "+ price_round + " GHS (250KG)")
-        return render_template('sorghum.html', form=form, month_i=month_i, year=year, price=price, data=data)
-
-    
-    
-    return render_template('sorghum.html', form=form , data=data) 
-
-
-
-@app.route('/rice', methods=['GET','POST'])
-def rice():
-    cursor = db.cursor()
-    cursor.execute("SELECT  * FROM  prediction where crop = 'Rice' ")
-    data = cursor.fetchall()
-    print(data)
-    cursor.close()
-
-    form = PredicitForm(request.form)
-    if request.method == 'POST' and form.validate():
-        month = form.month.data
-        year = form.year.data
-        payload_scoring = {"fields":["Year","Month"],"values":[[year,int(month)]]}
-        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/ac8f4cbf-a774-49f2-944c-6d8afe756b99/online', json=payload_scoring, headers=header)
-        print("Scoring response")
-        print(json.loads(response_scoring.text)) 
-        print(month)
-        response = json.loads(response_scoring.text)
-
-        #get result from the response 
-        month_num = int(response['values'][0][1])
-        month_i = "Month : " + calendar.month_name[month_num]
-        year =  "Year : " + str(response['values'][0][0])
-        pre_prams = str(response['values'][0][2])
-        price_round = ("%.2f" % round(response['values'][0][3],2))
-        price = str("Predict Price :  "+ price_round + " GHS (100KG)")
-        return render_template('rice.html', form=form, month_i=month_i, year=year, price=price, data=data)
-
-    
-    
-    return render_template('rice.html', form=form , data=data) 
-
-
-@app.route('/yam', methods=['GET','POST'])
-def yam():
-    cursor = db.cursor()
-    cursor.execute("SELECT  * FROM  prediction where crop = 'Yam' ")
-    data = cursor.fetchall()
-    print(data)
-    cursor.close()
-
-    form = PredicitForm(request.form)
-    if request.method == 'POST' and form.validate():
-        month = form.month.data
-        year = form.year.data
-        payload_scoring = {"fields":["MONTH","YEAR"],"values":[[int(month),year]]}
-        response_scoring = requests.post('https://eu-gb.ml.cloud.ibm.com/v3/wml_instances/6a216236-adcc-48b5-901f-41e4cafbf033/deployments/1d441776-58fb-4e22-8975-aa9b1c4a40a9/online', json=payload_scoring, headers=header)
-        print("Scoring response")
-        print(json.loads(response_scoring.text)) 
-        print(month)
-        response = json.loads(response_scoring.text)
-
-        #get result from the response 
-        month_num = int(response['values'][0][0])
-        month_i = "Month : " + calendar.month_name[month_num]
-        year =  "Year : " + str(response['values'][0][1])
-        pre_prams = str(response['values'][0][2])
-        price_round = ("%.2f" % round(response['values'][0][3],2))
-        price = str("Predict Price :  "+ price_round + " GHS (250KG)")
-        return render_template('yam.html', form=form, month_i=month_i, year=year, price=price, data=data)
-
-    
-    
-    return render_template('yam.html', form=form , data=data)  
 
 if __name__ == '__main__':
     app.secret_key='secret123'
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0',debug=True)
