@@ -5,8 +5,8 @@ import pymysql
 from flaskext.mysql import MySQL
 import os
 
-# db = pymysql.connect("localhost","root","ahmed@12345","farmula_dashboard")
-db = pymysql.connect("localhost","root","","yfarm")
+db = pymysql.connect("localhost","root","ahmed@12345","farmula_dashboard")
+# db = pymysql.connect("localhost","root","","yfarm")
 
 
 app = Flask(__name__)
